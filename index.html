@@ -260,6 +260,99 @@
         .btn-download-json:hover {
             background-color: #343a40; 
         }
+
+        /* --- Modal Styles --- */
+        #optimizer-modal {
+            display: none;
+            position: fixed;
+            z-index: 50;
+            left: 0;
+            top: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(15, 23, 42, 0.25);
+        }
+        #optimizer-modal > div {
+            position: relative;
+            max-width: 800px;
+            margin: 40px auto;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(15, 23, 42, 0.18);
+            padding: 0;
+        }
+        #close-optimizer-modal {
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            background: #e0e7ef;
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            font-size: 22px;
+            color: #334155;
+            cursor: pointer;
+            z-index: 2;
+        }
+        #optimizer-modal h1 {
+            margin: 0 0 8px;
+            font-size: 22px;
+            font-weight: 900;
+            color: #0b69ff;
+        }
+        #optimizer-modal p {
+            font-size: 13px;
+            color: #475569;
+            margin-bottom: 12px;
+        }
+        #optimizer-modal label {
+            font-weight: 500;
+            margin-top: 12px;
+            display: block;
+        }
+        #optimizer-modal input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #e6eef8;
+            margin-top: 6px;
+            box-sizing: border-box;
+        }
+        #optimizer-modal button {
+            margin-top: 14px;
+            background: #0b69ff;
+            color: white;
+            border: 0;
+            padding: 10px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+        #output {
+            display: none;
+            margin-top: 16px;
+            padding: 12px;
+            background: #fbfdff;
+            border-radius: 8px;
+            border: 1px solid #e6f0ff;
+        }
+        #output p {
+            margin: 4px 0;
+        }
+        #raw {
+            display: none;
+            background: #0b122030;
+            padding: 12px;
+            border-radius: 8px;
+            overflow: auto;
+            color: #001;
+        }
+        #status {
+            font-size: 13px;
+            color: #475569;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body class="p-4">
@@ -274,6 +367,7 @@
             <nav class="space-x-4 font-medium text-sm flex items-center">
                 <a href="#" class="hover:text-gray-600" style="color: var(--text-title-light);">About Data</a>
                 <a href="#" class="hover:text-gray-600" style="color: var(--text-title-light);">API</a>
+                <a href="#" id="open-optimizer-link" class="hover:text-gray-600" style="color: var(--btn-color); font-weight:700;">Rain Window Optimizer</a>
             </nav>
         </header>
         
@@ -311,8 +405,8 @@
                                     type="text"
                                     id="date-input"
                                     placeholder="dd-mm-yyyy"
-                                    onfocus="(this.type='date')"
-                                    onblur="(this.type.value='text')"
+                                    onfocus="this.type='date'"
+                                    onblur="resetInputType(this, 'text', 'dd-mm-yyyy')"
                                     class="input-field w-full focus:outline-none"
                                 >
                             </div>
@@ -326,8 +420,8 @@
                                     type="text"
                                     id="time-input"
                                     placeholder="--:--"
-                                    onfocus="(this.type='time')"
-                                    onblur="(this.type.value='text')"
+                                    onfocus="this.type='time'"
+                                    onblur="resetInputType(this, 'text', '--:--')"
                                     class="input-field w-full focus:outline-none"
                                 >
                             </div>
@@ -424,7 +518,7 @@
                                     <i data-lucide="x" class="w-5 h-5"></i>
                                 </button>
                             </div>
-                            <p class="text-sm mb-3">The score is calculated based on deductions for **Precipitation, Max Wind Speed, Max UV Index, Air Quality, and Ground Conditions**. **A higher score indicates safer, more suitable weather.**</p>
+                            <p class="text-sm mb-3">The score is calculated based on deductions for *Precipitation, Max Wind Speed, Max UV Index, Air Quality, and Ground Conditions. **A higher score indicates safer, more suitable weather.*</p>
                             
                             <table class="score-table w-full border-collapse">
                                 <thead>
@@ -532,7 +626,7 @@
 
             const locationName = locationInput.value.trim().replace(/[^a-z0-9]/gi, '_').toLowerCase();
             const dateStr = dateInput.value.replace(/-/g, '');
-            const filename = `wirmp_data_${locationName}_${dateStr}.${format}`;
+            const filename = wirmp_data_${locationName}_${dateStr}.${format};
             let dataString = '';
             let mimeType = '';
 
@@ -607,24 +701,24 @@
          * Simple Geocoding function using Open-Meteo's free service.
          */
         async function geocodeLocation(locationName) {
-            const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(locationName)}&count=1&language=en&format=json`;
+            const url = https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(locationName)}&count=1&language=en&format=json;
 
             try {
                 const response = await fetch(url);
                 if (!response.ok) {
-                    throw new Error(`Geocoding failed with status: ${response.status}`);
+                    throw new Error(Geocoding failed with status: ${response.status});
                 }
                 const data = await response.json();
 
                 if (!data.results || data.results.length === 0) {
-                    throw new Error(`Location "${locationName}" not found.`);
+                    throw new Error(Location "${locationName}" not found.);
                 }
 
                 const result = data.results[0];
                 return {
                     lat: result.latitude,
                     lon: result.longitude,
-                    name: `${result.name}, ${result.country}`,
+                    name: ${result.name}, ${result.country},
                     elevation: result.elevation || 0,
                 };
 
@@ -691,9 +785,9 @@
          * Returns an icon based on cloud cover percentage.
          */
         function getCloudCoverIcon(cloudCover) {
-            if (cloudCover < 20) return '☀️';
-            if (cloudCover < 50) return '🌥️';
-            if (cloudCover < 80) return '☁️';
+            if (cloudCover < 20) return '☀';
+            if (cloudCover < 50) return '🌥';
+            if (cloudCover < 80) return '☁';
             return ' overcast';
         }
         
@@ -723,7 +817,7 @@
             const rainDeduction = Math.min(50, rainProb / 2); 
             score -= rainDeduction;
             if (rainDeduction > 0) {
-                 deductionReason.push(`${rainProb}% Rain Probability`);
+                 deductionReason.push(${rainProb}% Rain Probability);
             }
             
             // 2. Wind Speed Deduction (Max 30 points)
@@ -731,7 +825,7 @@
             if (maxWind > WIND_THRESHOLD) {
                 const windDeduction = Math.min(30, (maxWind - WIND_THRESHOLD) * 2 + 10);
                 score -= windDeduction;
-                deductionReason.push(`${maxWind} km/h Wind`);
+                deductionReason.push(${maxWind} km/h Wind);
             } else if (maxWind > 15) {
                 const windDeduction = Math.min(10, (maxWind - 15) / 2);
                  score -= windDeduction;
@@ -740,11 +834,11 @@
             // 3. UV Index Deduction (Max 20 points)
             if (uvIndex >= 6 && uvIndex <= 7) {
                 score -= 5;
-                deductionReason.push(`High UV ${uvIndex}`);
+                deductionReason.push(High UV ${uvIndex});
             } else if (uvIndex > 7) {
                 const uvDeduction = Math.min(20, 10 + (uvIndex - 7) * 5);
                 score -= uvDeduction;
-                deductionReason.push(`Extreme UV ${uvIndex}`);
+                deductionReason.push(Extreme UV ${uvIndex});
             }
             
             // --- NASA DATA DEDUCTIONS (PLACEHOLDERS) ---
@@ -753,7 +847,7 @@
             if (airQualityAOD > 0.4) {
                  const aodDeduction = Math.min(15, (airQualityAOD - 0.4) * 30);
                  score -= aodDeduction;
-                 deductionReason.push(`Poor Air Quality (AOD ${airQualityAOD.toFixed(2)})`);
+                 deductionReason.push(Poor Air Quality (AOD ${airQualityAOD.toFixed(2)}));
             }
             
             // 5. Ground Condition Deduction (NASA Snow Cover/Soil Moisture) (Max 20 points)
@@ -800,13 +894,13 @@
                 forecast_days: 7, 
             });
 
-            const url = `https://api.open-meteo.com/v1/forecast?${params.toString()}`;
+            const url = https://api.open-meteo.com/v1/forecast?${params.toString()};
 
             try {
                 const response = await fetchWithExponentialBackoff(url);
                 if (!response.ok) {
                     const errorText = await response.text();
-                    throw new Error(`Weather API request failed: ${response.status} - ${errorText}`);
+                    throw new Error(Weather API request failed: ${response.status} - ${errorText});
                 }
                 return await response.json();
             } catch (error) {
@@ -878,7 +972,7 @@
             // Dark Sky Start (Approximate using Open-Meteo's is_day hourly data)
             let darkSkyTime = "N/A";
             const hourly = weatherData.hourly;
-            const startTime = new Date(`${dateValue}T12:00:00Z`).getTime(); 
+            const startTime = new Date(${dateValue}T12:00:00Z).getTime(); 
             for (let i = 0; i < hourly.time.length; i++) {
                 const hourTime = new Date(hourly.time[i]).getTime();
                 if (hourTime >= startTime && hourly.is_day[i] === 0) {
@@ -968,52 +1062,52 @@
             if (safetyScore.score < 80) scoreColor = 'var(--risk-moderate)'; 
             if (safetyScore.score < 50) scoreColor = 'var(--risk-high)'; 
             
-            scoreCircle.style.setProperty('--score', `${safetyScore.score}%`);
-            scoreCircle.style.background = `conic-gradient(${scoreColor} 0% ${safetyScore.score}%, #e9ecef ${safetyScore.score}% 100%)`; // Dynamic update
-            scoreText.textContent = `${safetyScore.score}%`;
+            scoreCircle.style.setProperty('--score', ${safetyScore.score}%);
+            scoreCircle.style.background = conic-gradient(${scoreColor} 0% ${safetyScore.score}%, #e9ecef ${safetyScore.score}% 100%); // Dynamic update
+            scoreText.textContent = ${safetyScore.score}%;
             scoreText.style.color = scoreColor;
             scoreLabel.textContent = safetyScore.text;
 
 
             // Update other DOM elements
-            document.getElementById('current-location').textContent = `${locationName} - ${new Date(dateValue).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`;
+            document.getElementById('current-location').textContent = ${locationName} - ${new Date(dateValue).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })};
             
-            document.getElementById('current-temperature').textContent = `${Math.round(selectedDayForecast.temp_max)}°C / ${Math.round(selectedDayForecast.temp_min)}°C`;
+            document.getElementById('current-temperature').textContent = ${Math.round(selectedDayForecast.temp_max)}°C / ${Math.round(selectedDayForecast.temp_min)}°C;
             document.getElementById('current-summary').textContent = dailyInterpretation.summary;
             document.getElementById('current-icon').textContent = dailyInterpretation.icon;
             
-            document.getElementById('current-wind').textContent = `${selectedDayForecast.max_wind.toFixed(1)} km/h (Max)`;
-            document.getElementById('current-humidity').textContent = `${current.relative_humidity_2m}% (Now)`;
-            document.getElementById('current-max-temp').textContent = `${Math.round(selectedDayForecast.temp_max)}°C`;
+            document.getElementById('current-wind').textContent = ${selectedDayForecast.max_wind.toFixed(1)} km/h (Max);
+            document.getElementById('current-humidity').textContent = ${current.relative_humidity_2m}% (Now);
+            document.getElementById('current-max-temp').textContent = ${Math.round(selectedDayForecast.temp_max)}°C;
             
-            document.getElementById('current-cloud-cover').innerHTML = `${getCloudCoverIcon(current.cloud_cover)} Cloud Cover: ${current.cloud_cover}% (Now)`;
+            document.getElementById('current-cloud-cover').innerHTML = ${getCloudCoverIcon(current.cloud_cover)} Cloud Cover: ${current.cloud_cover}% (Now);
             
-            document.getElementById('current-uv-index').textContent = `${selectedDayForecast.uv_index} (${uvInterpretation.description})`;
-            document.getElementById('current-uv-index').className = `text-base font-medium ${uvInterpretation.class}`; 
+            document.getElementById('current-uv-index').textContent = ${selectedDayForecast.uv_index} (${uvInterpretation.description});
+            document.getElementById('current-uv-index').className = text-base font-medium ${uvInterpretation.class}; 
             
-            document.getElementById('current-rain-prob-main').textContent = `${selectedDayForecast.rain_prob}%`;
+            document.getElementById('current-rain-prob-main').textContent = ${selectedDayForecast.rain_prob}%;
             const rainAmountText = selectedDayForecast.rain_sum > 0.1 
-                ? `${selectedDayForecast.rain_sum.toFixed(1)} mm`
+                ? ${selectedDayForecast.rain_sum.toFixed(1)} mm
                 : 'No measurable rain';
             document.getElementById('current-rain-amount-main').textContent = rainAmountText;
             
             // NASA DATA DISPLAY
-            document.getElementById('current-air-quality').textContent = `${airQualityInterpretation.description} (AOD: ${nasaData.airQualityAOD.toFixed(2)})`;
-            document.getElementById('current-air-quality').className = `text-base font-medium ${airQualityInterpretation.class}`;
+            document.getElementById('current-air-quality').textContent = ${airQualityInterpretation.description} (AOD: ${nasaData.airQualityAOD.toFixed(2)});
+            document.getElementById('current-air-quality').className = text-base font-medium ${airQualityInterpretation.class};
             
-            let groundRiskText = `Soil Moisture: ${(nasaData.soilMoisture * 100).toFixed(0)}%`;
+            let groundRiskText = Soil Moisture: ${(nasaData.soilMoisture * 100).toFixed(0)}%;
             let groundRiskClass = 'text-gray-800';
             if (nasaData.hasSnowCover) {
-                groundRiskText = 'SNOW COVER DETECTED ❄️';
+                groundRiskText = 'SNOW COVER DETECTED ❄';
                 groundRiskClass = 'text-red-600 font-bold';
             } else if (nasaData.soilMoisture > 0.8) {
-                 groundRiskText = `Wet Ground (${(nasaData.soilMoisture * 100).toFixed(0)}%)`;
+                 groundRiskText = Wet Ground (${(nasaData.soilMoisture * 100).toFixed(0)}%);
                  groundRiskClass = 'text-yellow-600 font-bold';
             }
             document.getElementById('current-ground-risk').textContent = groundRiskText;
-            document.getElementById('current-ground-risk').className = `text-base font-medium ${groundRiskClass}`;
+            document.getElementById('current-ground-risk').className = text-base font-medium ${groundRiskClass};
             
-            document.getElementById('coordinates').textContent = `Coordinates: Lat ${lat.toFixed(2)}, Lon ${lon.toFixed(2)}, Elev ${weatherData.elevation}m. Forecast uses NOAA GFS data for the selected date.`;
+            document.getElementById('coordinates').textContent = Coordinates: Lat ${lat.toFixed(2)}, Lon ${lon.toFixed(2)}, Elev ${weatherData.elevation}m. Forecast uses NOAA GFS data for the selected date.;
 
             currentWeatherCard.classList.remove('hidden');
         }
@@ -1107,7 +1201,7 @@
          * Displays an error message in the dedicated container.
          */
         function displayError(message) {
-            errorContainer.innerHTML = `<div class="error-message">${message}</div>`;
+            errorContainer.innerHTML = <div class="error-message">${message}</div>;
             errorContainer.classList.remove('hidden');
         }
 
@@ -1222,7 +1316,128 @@
             
             lucide.createIcons();
         };
+
+        // Add this helper function for input type reset
+        window.resetInputType = function(input, type, placeholder) {
+            input.type = type;
+            input.placeholder = placeholder;
+        };
     </script>
 </body>
 
 </html>
+
+<!-- Rain Window Optimizer Modal -->
+<div id="optimizer-modal" style="display:none; position:fixed; z-index:50; left:0; top:0; width:100vw; height:100vh; background:rgba(15,23,42,0.25);">
+  <div style="position:relative; max-width:800px; margin:40px auto; background:#fff; border-radius:16px; box-shadow:0 8px 32px rgba(15,23,42,0.18); padding:0;">
+    <button id="close-optimizer-modal" style="position:absolute; top:18px; right:18px; background:#e0e7ef; border:none; border-radius:50%; width:36px; height:36px; font-size:22px; color:#334155; cursor:pointer; z-index:2;">×</button>
+    <div style="padding:32px;">
+      <h1 style="margin:0 0 8px; font-size:22px; font-weight:900; color:#0b69ff;">Rain Window Optimizer (IMERG)</h1>
+      <p style="font-size:13px; color:#475569; margin-bottom:12px;">Enter an IMERG NetCDF path or OPeNDAP URL (or local file path if your backend can access it). Times are in UTC.</p>
+      <label>IMERG file path / OPeNDAP URL</label>
+      <input id="imergPath" type="text" placeholder="e.g. https://.../gpm_imerg_file.nc or /data/gpm.nc" value="" style="width:100%; padding:10px; border-radius:8px; border:1px solid #e6eef8; margin-top:6px; box-sizing:border-box;">
+      <div style="display:flex; gap:12px;">
+        <div style="flex:1;">
+          <label>Latitude</label>
+          <input id="lat" type="number" step="0.0001" value="8.5241" style="width:100%; padding:10px; border-radius:8px; border:1px solid #e6eef8; margin-top:6px; box-sizing:border-box;">
+        </div>
+        <div style="flex:1;">
+          <label>Longitude</label>
+          <input id="lon" type="number" step="0.0001" value="76.9366" style="width:100%; padding:10px; border-radius:8px; border:1px solid #e6eef8; margin-top:6px; box-sizing:border-box;">
+        </div>
+      </div>
+      <div style="display:flex; gap:12px;">
+        <div style="flex:1;">
+          <label>Forecast horizon (hours)</label>
+          <input id="forecastHours" type="number" step="1" value="6" style="width:100%; padding:10px; border-radius:8px; border:1px solid #e6eef8; margin-top:6px; box-sizing:border-box;">
+        </div>
+        <div style="flex:1;">
+          <label>Window duration (hours)</label>
+          <input id="windowHours" type="number" step="0.5" value="1.5" style="width:100%; padding:10px; border-radius:8px; border:1px solid #e6eef8; margin-top:6px; box-sizing:border-box;">
+        </div>
+      </div>
+      <label>Precip variable name (optional)</label>
+      <input id="precipVar" type="text" placeholder="e.g. precipitationCal (leave empty to use default)" style="width:100%; padding:10px; border-radius:8px; border:1px solid #e6eef8; margin-top:6px; box-sizing:border-box;">
+      <button id="runBtn" style="margin-top:14px; background:#0b69ff; color:white; border:0; padding:10px 14px; border-radius:8px; cursor:pointer; font-weight:700;">Find Best Window</button>
+      <div id="output" style="display:none; margin-top:16px; padding:12px; background:#fbfdff; border-radius:8px; border:1px solid #e6f0ff;">
+        <strong>Results:</strong>
+        <div id="jsonOut" style="margin-top:8px;"></div>
+        <pre id="raw" style="display:none; background:#0b122030; padding:12px; border-radius:8px; overflow:auto; color:#001;"></pre>
+      </div>
+      <div id="status" style="font-size:13px; color:#475569; margin-top:10px"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Modal open/close logic
+  document.getElementById('open-optimizer-btn').onclick = () => {
+    document.getElementById('optimizer-modal').style.display = 'block';
+  };
+  document.getElementById('open-optimizer-link').onclick = (e) => {
+    e.preventDefault();
+    document.getElementById('optimizer-modal').style.display = 'block';
+  };
+  document.getElementById('close-optimizer-modal').onclick = () => {
+    document.getElementById('optimizer-modal').style.display = 'none';
+  };
+
+  // Rain Window Optimizer logic
+  const runBtn = document.getElementById("runBtn");
+  const output = document.getElementById("output");
+  const jsonOut = document.getElementById("jsonOut");
+  const raw = document.getElementById("raw");
+  const status = document.getElementById("status");
+
+  runBtn.onclick = async () => {
+    output.style.display = "none";
+    raw.style.display = "none";
+    jsonOut.innerHTML = "";
+    status.textContent = "Requesting...";
+
+    const payload = {
+      path_or_url: document.getElementById("imergPath").value.trim(),
+      lat: parseFloat(document.getElementById("lat").value),
+      lon: parseFloat(document.getElementById("lon").value),
+      forecast_hours: parseFloat(document.getElementById("forecastHours").value),
+      window_hours: parseFloat(document.getElementById("windowHours").value),
+      precip_var: document.getElementById("precipVar").value.trim() || undefined
+    };
+
+    if (!payload.path_or_url) {
+      status.textContent = "Please provide an IMERG path or OPeNDAP URL.";
+      return;
+    }
+    if (Number.isNaN(payload.lat) || Number.isNaN(payload.lon)) {
+      status.textContent = "Provide valid latitude and longitude.";
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/optimize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) {
+        const txt = await res.text();
+        status.textContent = "Server error: " + res.status + " — " + txt;
+        return;
+      }
+      const data = await res.json();
+      status.textContent = "Done ✓ (times in UTC)";
+      output.style.display = "block";
+      jsonOut.innerHTML = `
+        <p><strong>Grid point used:</strong> ${data.grid_coord_used.lat}, ${data.grid_coord_used.lon}</p>
+        <p><strong>Best window (UTC):</strong> ${data.best_start_time_utc} → ${data.best_end_time_utc}</p>
+        <p><strong>Accumulated rain (mm):</strong> ${data.accumulated_rain_mm}</p>
+        <p><strong>Mean intensity (mm/hr):</strong> ${data.mean_intensity_mm_per_hr}</p>
+        <p><strong>Probability any rain:</strong> ${(data.probability_of_any_rain * 100).toFixed(1)}%</p>
+      `;
+      raw.textContent = JSON.stringify(data, null, 2);
+      raw.style.display = "block";
+    } catch (err) {
+      status.textContent = "Error contacting server: " + err.message;
+    }
+  };
+</script>
